@@ -132,3 +132,4 @@ dist
 .idea/
 config/local.yml
 package-lock.json
+robota.tar
