@@ -1,9 +1,12 @@
+import { interactionCreateCommand } from "./action_interactionCreateCommand"
+
 var cron = require('node-cron')
 const config = require("config")
 import * as dotenv from 'dotenv'
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid'
-import { GuildTextBasedChannel, Message, TextBasedChannel } from "discord.js"
+import { CacheType, GuildTextBasedChannel, Interaction, Message, TextBasedChannel } from "discord.js"
+
 dotenv.config()
 const mysql = require('mysql')
 
@@ -12,7 +15,7 @@ import * as scheduled_jobs from './scheduled_jobs'
 import * as command_management from './command_management'
 import { messageCreate } from "./action_messageCreate"
 
-const { Client, GatewayIntentBits, Partials } = require('discord.js');
+const {Client, GatewayIntentBits, Partials} = require('discord.js')
 
 
 // debug constants
@@ -31,7 +34,7 @@ export const MAIN_SERVER_ID = config.get('server-info.server-id')
 export const ICS_CHANNEL_LISTENER = config.get('debug-mode.debug-server-id')
 
 // other constants
-export const ADMIN_LIST = config.get('server-info.admin-list').split(",");
+export const ADMIN_LIST = config.get('server-info.admin-list').split(",")
 
 //CONSTANTS END
 
@@ -69,9 +72,9 @@ export const con = mysql.createPool({
     database: dbDatabase
 })
 
-export var debugchannel : GuildTextBasedChannel
+export var debugchannel: GuildTextBasedChannel
 
-client.on('ready', async () =>{
+client.on('ready', async () => {
 
     db_setup.setupDatabaseTables()
 
@@ -91,6 +94,10 @@ client.on('ready', async () =>{
 
 client.on('messageCreate', async (message: Message) => {
     await messageCreate(client, message)
+})
+
+client.on('interactionCreate', async (i: Interaction<CacheType>) => {
+    await interactionCreateCommand(client, i)
 })
 
 // hourly housekeep
