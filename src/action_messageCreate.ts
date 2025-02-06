@@ -4,7 +4,7 @@ import { debug_messageCreate } from "./debug"
 import { easter_egg_messageCreate } from "./easter_egg"
 import { processICS } from "./zTopic_calendar_management"
 import { dataFetch } from "./utility"
-import { SILLY_VIDEO_CHANNEL_LISTENER } from "./index"
+import { ICS_CHANNEL_LISTENER, SILLY_VIDEO_CHANNEL_LISTENER } from "./index"
 
 const urlReplacements: { [key: string]: string } = {
     'vm.tiktok.com': 'd.tnktok.com',
@@ -25,7 +25,7 @@ export async function messageCreate(client: Client, message: DiscordJS.Message) 
     }
 
     // check for attachment
-    if (message.attachments.size > 0) {
+    if (message.channel.id === ICS_CHANNEL_LISTENER && message.attachments.size > 0) {
         console.log(`Attachment found`)
         const attachment = message.attachments.first()
         if (attachment && attachment.size > 1000000) {
