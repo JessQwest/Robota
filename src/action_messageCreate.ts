@@ -1,5 +1,5 @@
 import * as DiscordJS from "discord.js"
-import { Attachment, Client } from "discord.js"
+import { Client } from "discord.js"
 import { debug_messageCreate } from "./debug"
 import { easter_egg_messageCreate } from "./easter_egg"
 import { processICS } from "./zTopic_calendar_management"
@@ -24,6 +24,7 @@ export async function messageCreate(client: Client, message: DiscordJS.Message) 
         if (data_url == null) return
         const fileContent = await dataFetch(data_url)
         await processICS(fileContent)
+        return
     }
 
     await debug_messageCreate(message)

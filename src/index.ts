@@ -14,6 +14,7 @@ import * as db_setup from './db_setup'
 import * as scheduled_jobs from './scheduled_jobs'
 import * as command_management from './command_management'
 import { messageCreate } from "./action_messageCreate"
+import { hourlyHousekeepTask } from "./scheduled_jobs"
 
 const {Client, GatewayIntentBits, Partials} = require('discord.js')
 
@@ -37,12 +38,14 @@ export const EMOJI_SUNDAY = config.get('emoji.sunday')
 
 // channel constants
 
+export const SCHEDULE_BROADCAST_CHANNEL = config.get('server-info.schedule-broadcast-channel')
+
 // server constants
 export const MAIN_SERVER_ID = config.get('server-info.server-id')
 export const ICS_CHANNEL_LISTENER = config.get('debug-mode.debug-server-id')
 
 // other constants
-export const ADMIN_LIST = config.get('server-info.admin-list').split(",")
+export const ADMIN_USER_ID = config.get('server-info.admin-user-id')
 
 //CONSTANTS END
 
@@ -89,7 +92,8 @@ client.on('ready', async () => {
     command_management.registerCommands()
 
     if (client.user != null) {
-        client.user.setActivity(`Happy to help!`)
+        await hourlyHousekeepTask()
+        //client.user.setActivity(`Happy to help!`)
     }
 
     debugchannel = await client.channels.fetch(DEBUG_CHANNEL_ID) as GuildTextBasedChannel
@@ -113,9 +117,19 @@ cron.schedule('* * * * *', async () => { // 0 * * * * for every hour or * * * * 
     await scheduled_jobs.hourlyHousekeepTask()
 })
 
-// daily housekeep
-cron.schedule('0 7 * * *', async () => { // 0 7 * * * for every 7am or * * * * * for every min
-    await scheduled_jobs.dailyHousekeepTask()
+// daily announcement
+cron.schedule('0 7 * * 2,3,4,6,7', async () => { // every 7am on all days that are not monday or saturday
+    await scheduled_jobs.dailyAnnouncementTask()
+})
+
+// monday announcement
+cron.schedule('0 7 * * 1', async () => { // every 7am on monday
+    await scheduled_jobs.mondayAnnouncementTask()
+})
+
+// saturday announcement
+cron.schedule('0 7 * * 5', async () => { // every 7am on monday
+    await scheduled_jobs.weekendAnnouncementTask()
 })
 
 process.on('unhandledRejection', error => {

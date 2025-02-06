@@ -1,4 +1,3 @@
-import { ADMIN_LIST } from "./index"
 import * as DiscordJS from "discord.js"
 import { ColorResolvable, EmbedBuilder } from "discord.js"
 import fetch from "node-fetch"

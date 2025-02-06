@@ -137,6 +137,20 @@ export async function getTodayCalendarEvents(): Promise<CalendarEvent[]> {
     return await getOverlappingEvents(startTime, endTime);
 }
 
+export async function getWeekendCalendarEvents(): Promise<CalendarEvent[]> {
+    const startTime = new Date();
+    const dayOfWeek = startTime.getDay();
+    const daysUntilSaturday = 6 - dayOfWeek;
+    startTime.setDate(startTime.getDate() + daysUntilSaturday);
+    startTime.setHours(0, 0, 0, 0);
+
+    const endTime = new Date(startTime);
+    endTime.setDate(startTime.getDate() + 1);
+    endTime.setHours(23, 59, 59, 999);
+
+    return await getOverlappingEvents(startTime, endTime);
+}
+
 export function formatCalendarEvents(events: CalendarEvent[], dayView: boolean): string {
     return events.map(event => {
         const startTime = event.startTime;

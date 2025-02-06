@@ -2,9 +2,12 @@ server-info:
   # The ID of the main server
   server-id: ''
 
-  ics-channel-listener: ''
+  admin-user-id: ''
 
-  admin-list: ''
+  ics-channel-listener: ''
+  silly-video-channel-listener: ''
+
+  schedule-broadcast-channel: ''
 
 emoji:
   monday: '<:1_monday:1336786443061690368>'

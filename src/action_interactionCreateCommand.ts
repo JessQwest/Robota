@@ -5,7 +5,7 @@ import {
     formatCalendarEvents,
     getNextWeekCalendarEvents,
     getThisWeekCalendarEvents,
-    getTodayCalendarEvents
+    getTodayCalendarEvents, getWeekendCalendarEvents
 } from "./zTopic_calendar_management"
 import { stringToEmbeds } from "./utility"
 
@@ -38,12 +38,23 @@ export async function interactionCreateCommand(client: Client, i: Interaction) {
 
     if (commandName === "nextweek") {
         getNextWeekCalendarEvents().then((events) => {
-            const formattedDates = formatCalendarEvents(events, false);
+            const formattedDates = formatCalendarEvents(events, false)
 
-            const embeds = stringToEmbeds("Events for the next 7 days", formattedDates);
+            const embeds = stringToEmbeds("Events for the next 7 days", formattedDates)
 
-            i.reply({ embeds: embeds });
-        });
-        return;
+            i.reply({ embeds: embeds })
+        })
+        return
+    }
+
+    if (commandName === "weekend") {
+        getWeekendCalendarEvents().then((events) => {
+            const formattedDates = formatCalendarEvents(events, false)
+
+            const embeds = stringToEmbeds("Weekend events", formattedDates)
+
+            i.reply({ embeds: embeds })
+        })
+        return
     }
 }
