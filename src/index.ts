@@ -27,6 +27,14 @@ console.log(`Running with debug mode set to ${DEBUGMODE}`)
 
 // text constants
 
+export const EMOJI_MONDAY = config.get('emoji.monday')
+export const EMOJI_TUESDAY = config.get('emoji.tuesday')
+export const EMOJI_WEDNESDAY = config.get('emoji.wednesday')
+export const EMOJI_THURSDAY = config.get('emoji.thursday')
+export const EMOJI_FRIDAY = config.get('emoji.friday')
+export const EMOJI_SATURDAY = config.get('emoji.saturday')
+export const EMOJI_SUNDAY = config.get('emoji.sunday')
+
 // channel constants
 
 // server constants

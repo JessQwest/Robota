@@ -1,7 +1,12 @@
 import {
     Client, Interaction
 } from "discord.js"
-import { formatCalendarEvents, getThisWeekCalendarEvents, getTodayCalendarEvents } from "./zTopic_calendar_management"
+import {
+    formatCalendarEvents,
+    getNextWeekCalendarEvents,
+    getThisWeekCalendarEvents,
+    getTodayCalendarEvents
+} from "./zTopic_calendar_management"
 import { stringToEmbeds } from "./utility"
 
 export async function interactionCreateCommand(client: Client, i: Interaction) {
@@ -11,7 +16,7 @@ export async function interactionCreateCommand(client: Client, i: Interaction) {
 
     if (commandName === "today") {
         getTodayCalendarEvents().then((events) => {
-            const formattedDates = formatCalendarEvents(events)
+            const formattedDates = formatCalendarEvents(events, true)
 
             const embeds = stringToEmbeds("Today's events", formattedDates)
 
@@ -22,12 +27,23 @@ export async function interactionCreateCommand(client: Client, i: Interaction) {
 
     if (commandName === "thisweek") {
         getThisWeekCalendarEvents().then((events) => {
-            const formattedDates = formatCalendarEvents(events)
+            const formattedDates = formatCalendarEvents(events, false)
 
             const embeds = stringToEmbeds("This weeks events", formattedDates)
 
             i.reply({ embeds: embeds })
         })
         return
+    }
+
+    if (commandName === "nextweek") {
+        getNextWeekCalendarEvents().then((events) => {
+            const formattedDates = formatCalendarEvents(events, false);
+
+            const embeds = stringToEmbeds("Events for the next 7 days", formattedDates);
+
+            i.reply({ embeds: embeds });
+        });
+        return;
     }
 }

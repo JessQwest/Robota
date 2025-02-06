@@ -6,6 +6,15 @@ server-info:
 
   admin-list: ''
 
+emoji:
+  monday: '<:1_monday:1336786443061690368>'
+  tuesday: '<:2_tuesday:1336786462292836443>'
+  wednesday: '<:3_wednesday:1336786470446567464>'
+  thursday: '<:4_thursday:1336786480156381315>'
+  friday: '<:5_friday:1336786489350164551>'
+  saturday: '<:6_saturday:1336786500049698947>'
+  sunday: '<:7_sunday:1336786509759643803>'
+
 database:
   host: ''
   port: ''

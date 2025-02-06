@@ -1,5 +1,15 @@
 import ical, { CalendarResponse, PropertyWithArgs, VEvent } from "node-ical"
-import { con } from "./index"
+import moment from "moment-timezone"
+import {
+    con,
+    EMOJI_FRIDAY,
+    EMOJI_MONDAY,
+    EMOJI_SATURDAY,
+    EMOJI_SUNDAY,
+    EMOJI_THURSDAY,
+    EMOJI_TUESDAY,
+    EMOJI_WEDNESDAY
+} from "./index"
 import { dateToDiscordTimestamp } from "./utility"
 
 interface VEventMS extends VEvent {
@@ -25,40 +35,70 @@ export async function processICS(icsString: string) {
                 const vEvent = event as VEventMS;
                 const startTime = vEvent.start;
                 const endTime = vEvent.end;
+                const duration = moment.duration(moment(endTime).diff(moment(startTime)));
+                console.log(`Event duration: ${duration.humanize()}`);
                 const summaryObj = vEvent.summary as unknown as PropertyWithArgs<any>;
                 const summary = summaryObj.val;
                 const categories = vEvent.categories;
 
-                const calendarEvent: CalendarEvent = {
-                    name: summary,
-                    startTime: startTime,
-                    endTime: endTime,
-                    categories: categories
-                };
+                if (categories && categories.some(category => category.toLowerCase().includes("ignore"))) {
+                    continue;
+                }
 
-                events.push(calendarEvent);
+                if (vEvent.rrule) { // multi instance
+                    const reoccurringEvents = vEvent.rrule.all();
+                    for (const reoccurringEvent of reoccurringEvents) {
+                        const reoccurringStartTime = reoccurringEvent;
+                        const reoccurringEndTime = new Date(reoccurringStartTime.getTime() + duration.asMilliseconds());
+                        const calendarEvent: CalendarEvent = {
+                            name: summary,
+                            startTime: reoccurringStartTime,
+                            endTime: reoccurringEndTime,
+                            categories: categories
+                        };
+                        events.push(calendarEvent);
+                    }
+                } else { // single instance
+                    const calendarEvent: CalendarEvent = {
+                        name: summary,
+                        startTime: startTime,
+                        endTime: endTime,
+                        categories: categories
+                    };
+
+                    events.push(calendarEvent);
+                }
             }
         }
     }
-
     await persistEventsToDatabase(events);
 }
 
 async function persistEventsToDatabase(events: CalendarEvent[]) {
     if (events.length > 0) {
-        con.query('DELETE FROM `events`', function (err: any, result: any, fields: any) {
-            if (err) throw err;
-            console.log("All current records deleted from events table");
-        });
-    }
-
-    for (const event of events) {
-        con.query('INSERT INTO `events` (`name`, `startTime`, `endTime`, `categories`) VALUES (?, ?, ?, ?)',
-            [event.name, event.startTime, event.endTime, event.categories?.join(', ')],
-            function (err: any, result: any, fields: any) {
-                if (err) throw err;
-                console.log("Event inserted into database");
+        try {
+            await new Promise<void>((resolve, reject) => {
+                con.query('DELETE FROM `events`', function (err: any, result: any, fields: any) {
+                    if (err) return reject(err);
+                    console.log("All current records deleted from events table");
+                    resolve();
+                });
             });
+
+            for (const event of events) {
+                await new Promise<void>((resolve, reject) => {
+                    con.query('INSERT INTO `events` (`name`, `startTime`, `endTime`, `categories`) VALUES (?, ?, ?, ?)',
+                        [event.name, event.startTime, event.endTime, event.categories?.join(', ')],
+                        function (err: any, result: any, fields: any) {
+                            if (err) return reject(err);
+                            console.log("Event inserted into database");
+                            resolve();
+                        });
+                });
+            }
+        } catch (err) {
+            console.error("Error persisting events to database:", err);
+        }
     }
 }
 
@@ -67,6 +107,17 @@ export async function getThisWeekCalendarEvents(): Promise<CalendarEvent[]> {
     const day = startTime.getDay();
     const diff = startTime.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
     startTime.setDate(diff);
+    startTime.setHours(0, 0, 0, 0);
+
+    const endTime = new Date(startTime);
+    endTime.setDate(startTime.getDate() + 6);
+    endTime.setHours(23, 59, 59, 999);
+
+    return await getOverlappingEvents(startTime, endTime);
+}
+
+export async function getNextWeekCalendarEvents(): Promise<CalendarEvent[]> {
+    const startTime = new Date();
     startTime.setHours(0, 0, 0, 0);
 
     const endTime = new Date(startTime);
@@ -86,19 +137,20 @@ export async function getTodayCalendarEvents(): Promise<CalendarEvent[]> {
     return await getOverlappingEvents(startTime, endTime);
 }
 
-export function formatCalendarEvents(events: CalendarEvent[]): string {
+export function formatCalendarEvents(events: CalendarEvent[], dayView: boolean): string {
     return events.map(event => {
         const startTime = event.startTime;
         const endTime = event.endTime;
+        const dayEmoji = dayView ? "" : getDayEmoji(startTime);
 
         if (startTime.getHours() === 0 && startTime.getMinutes() === 0 && startTime.getSeconds() === 0 &&
             endTime.getHours() === 0 && endTime.getMinutes() === 0 && endTime.getSeconds() === 0 &&
             endTime.getTime() - startTime.getTime() === 24 * 60 * 60 * 1000) {
-            return `${dateToDiscordTimestamp(startTime, "D")}: ${event.name}`;
+            return `${dayEmoji}${dateToDiscordTimestamp(startTime, "D")}: ${event.name}`;
         } else {
-            const formattedStartTime = dateToDiscordTimestamp(startTime, "f");
+            const formattedStartTime = dateToDiscordTimestamp(startTime, dayView ? "t" : "f");
             const formattedEndTime = dateToDiscordTimestamp(endTime, "t");
-            return `${formattedStartTime} - ${formattedEndTime}: ${event.name}`;
+            return `${dayEmoji}${formattedStartTime} - ${formattedEndTime}: ${event.name}`;
         }
     }).join('\n');
 }
@@ -131,4 +183,26 @@ async function getOverlappingEvents(startTimeInput: Date, endTimeInput: Date): P
             resolve(events);
         });
     });
+}
+
+function getDayEmoji(date: Date): string {
+    const dayOfWeek = date.getDay();
+    switch (dayOfWeek) {
+        case 0:
+            return EMOJI_SUNDAY;
+        case 1:
+            return EMOJI_MONDAY;
+        case 2:
+            return EMOJI_TUESDAY;
+        case 3:
+            return EMOJI_WEDNESDAY;
+        case 4:
+            return EMOJI_THURSDAY;
+        case 5:
+            return EMOJI_FRIDAY;
+        case 6:
+            return EMOJI_SATURDAY;
+        default:
+            throw new Error("Invalid day of the week");
+    }
 }
