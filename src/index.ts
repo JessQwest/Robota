@@ -43,6 +43,7 @@ export const SCHEDULE_BROADCAST_CHANNEL = config.get('server-info.schedule-broad
 // server constants
 export const MAIN_SERVER_ID = config.get('server-info.server-id')
 export const ICS_CHANNEL_LISTENER = config.get('debug-mode.debug-server-id')
+export const SILLY_VIDEO_CHANNEL_LISTENER = config.get('server-info.silly-video-channel-listener')
 
 // other constants
 export const ADMIN_USER_ID = config.get('server-info.admin-user-id')
