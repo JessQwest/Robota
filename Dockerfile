@@ -13,8 +13,10 @@ RUN npm install
 # Copy the rest of the application code to the working directory
 COPY . .
 
+RUN chmod +x node_modules/.bin/tsc
+
 # Build the application
-RUN npm run build
+RUN npx tsc
 
 # Expose the port the app runs on
 EXPOSE 5000

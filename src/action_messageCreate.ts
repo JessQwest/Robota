@@ -8,9 +8,13 @@ import { ICS_CHANNEL_LISTENER, SILLY_VIDEO_CHANNEL_LISTENER } from "./index"
 
 const urlReplacements: { [key: string]: string } = {
     'vm.tiktok.com': 'd.tnktok.com',
+    'www.tiktok.com': 'd.tnktok.com',
     'tiktok.com': 'd.tnktok.com',
+    'www.twitter.com': 'd.fxtwitter.com',
     'twitter.com': 'd.fxtwitter.com',
+    'www.x.com': 'd.fxtwitter.com',
     'x.com': 'd.fxtwitter.com',
+    'www.bsky.app': 'r.bskx.app',
     'bsky.app': 'r.bskx.app',
 }
 
