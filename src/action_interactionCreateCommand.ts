@@ -5,7 +5,7 @@ import {
     formatCalendarEvents,
     getNextWeekCalendarEvents,
     getThisWeekCalendarEvents,
-    getTodayCalendarEvents, getWeekendCalendarEvents
+    getTodayCalendarEvents, getTomorrowCalendarEvents, getWeekendCalendarEvents
 } from "./zTopic_calendar_management"
 import { stringToEmbeds } from "./utility"
 
@@ -19,6 +19,17 @@ export async function interactionCreateCommand(client: Client, i: Interaction) {
             const formattedDates = formatCalendarEvents(events, true)
 
             const embeds = stringToEmbeds("Today's events", formattedDates)
+
+            i.reply({ embeds: embeds })
+        })
+        return
+    }
+
+    if (commandName === "tomorrow") {
+        getTomorrowCalendarEvents().then((events) => {
+            const formattedDates = formatCalendarEvents(events, true)
+
+            const embeds = stringToEmbeds("Tomorrows events", formattedDates)
 
             i.reply({ embeds: embeds })
         })

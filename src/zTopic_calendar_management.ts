@@ -107,7 +107,7 @@ export async function getThisWeekCalendarEvents(): Promise<CalendarEvent[]> {
     const day = startTime.getDay();
     const diff = startTime.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
     startTime.setDate(diff);
-    startTime.setHours(0, 0, 0, 0);
+    startTime.setHours(0, 0, 1, 0);
 
     const endTime = new Date(startTime);
     endTime.setDate(startTime.getDate() + 6);
@@ -118,7 +118,7 @@ export async function getThisWeekCalendarEvents(): Promise<CalendarEvent[]> {
 
 export async function getNextWeekCalendarEvents(): Promise<CalendarEvent[]> {
     const startTime = new Date();
-    startTime.setHours(0, 0, 0, 0);
+    startTime.setHours(0, 0, 1, 0);
 
     const endTime = new Date(startTime);
     endTime.setDate(startTime.getDate() + 6);
@@ -129,9 +129,20 @@ export async function getNextWeekCalendarEvents(): Promise<CalendarEvent[]> {
 
 export async function getTodayCalendarEvents(): Promise<CalendarEvent[]> {
     const startTime = new Date();
-    startTime.setHours(0, 0, 0, 0);
+    startTime.setHours(0, 0, 1, 0);
 
     const endTime = new Date();
+    endTime.setHours(23, 59, 59, 999);
+
+    return await getOverlappingEvents(startTime, endTime);
+}
+
+export async function getTomorrowCalendarEvents(): Promise<CalendarEvent[]> {
+    const startTime = new Date();
+    startTime.setDate(startTime.getDate() + 1);
+    startTime.setHours(0, 0, 1, 0);
+
+    const endTime = new Date(startTime);
     endTime.setHours(23, 59, 59, 999);
 
     return await getOverlappingEvents(startTime, endTime);
@@ -140,12 +151,12 @@ export async function getTodayCalendarEvents(): Promise<CalendarEvent[]> {
 export async function getWeekendCalendarEvents(): Promise<CalendarEvent[]> {
     const startTime = new Date();
     const dayOfWeek = startTime.getDay();
-    const daysUntilSaturday = 6 - dayOfWeek;
-    startTime.setDate(startTime.getDate() + daysUntilSaturday);
-    startTime.setHours(0, 0, 0, 0);
+    const daysUntilFriday = 5 - dayOfWeek;
+    startTime.setDate(startTime.getDate() + daysUntilFriday);
+    startTime.setHours(0, 0, 1, 0);
 
     const endTime = new Date(startTime);
-    endTime.setDate(startTime.getDate() + 1);
+    endTime.setDate(startTime.getDate() + 2);
     endTime.setHours(23, 59, 59, 999);
 
     return await getOverlappingEvents(startTime, endTime);
@@ -160,7 +171,8 @@ export function formatCalendarEvents(events: CalendarEvent[], dayView: boolean):
         if (startTime.getHours() === 0 && startTime.getMinutes() === 0 && startTime.getSeconds() === 0 &&
             endTime.getHours() === 0 && endTime.getMinutes() === 0 && endTime.getSeconds() === 0 &&
             endTime.getTime() - startTime.getTime() === 24 * 60 * 60 * 1000) {
-            return `${dayEmoji}${dateToDiscordTimestamp(startTime, "D")}: ${event.name}`;
+            const adjustedStartTime = new Date(startTime.getTime() + 12 * 60 * 60 * 1000);
+            return `${dayEmoji}${dateToDiscordTimestamp(adjustedStartTime, "D")}: ${event.name}`;
         } else {
             const formattedStartTime = dateToDiscordTimestamp(startTime, dayView ? "t" : "f");
             const formattedEndTime = dateToDiscordTimestamp(endTime, "t");

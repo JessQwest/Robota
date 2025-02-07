@@ -38,6 +38,11 @@ export function registerCommands() {
     })
 
     commands?.create({
+        name: 'tomorrow',
+        description: "What's happening today?"
+    })
+
+    commands?.create({
         name: 'nextweek',
         description: "What's happening next week?"
     })
