@@ -9,14 +9,18 @@ server-info:
 
   schedule-broadcast-channel: ''
 
+  logging-server-id: ''
+  logging-channel-id: ''
+
+# Upload these emojis to the dev panel and replace the IDs with the actual IDs
 emoji:
-  monday: '<:1_monday:1336786443061690368>'
-  tuesday: '<:2_tuesday:1336786462292836443>'
-  wednesday: '<:3_wednesday:1336786470446567464>'
-  thursday: '<:4_thursday:1336786480156381315>'
-  friday: '<:5_friday:1336786489350164551>'
-  saturday: '<:6_saturday:1336786500049698947>'
-  sunday: '<:7_sunday:1336786509759643803>'
+  monday: '<:1_monday:1111111111111111111>'
+  tuesday: '<:2_tuesday:1111111111111111111>'
+  wednesday: '<:3_wednesday:1111111111111111111>'
+  thursday: '<:4_thursday:1111111111111111111>'
+  friday: '<:5_friday:1111111111111111111>'
+  saturday: '<:6_saturday:1111111111111111111>'
+  sunday: '<:7_sunday:1111111111111111111>'
 
 database:
   host: ''

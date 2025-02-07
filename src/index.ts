@@ -3,8 +3,6 @@ import { interactionCreateCommand } from "./action_interactionCreateCommand"
 var cron = require('node-cron')
 const config = require("config")
 import * as dotenv from 'dotenv'
-// @ts-ignore
-import { v4 as uuidv4 } from 'uuid'
 import { CacheType, GuildTextBasedChannel, Interaction, Message, TextBasedChannel } from "discord.js"
 
 dotenv.config()
@@ -18,35 +16,46 @@ import { hourlyHousekeepTask } from "./scheduled_jobs"
 
 const {Client, GatewayIntentBits, Partials} = require('discord.js')
 
+function loadOption(key: string): any {
+    const modifiedKey = key.replace(/\./g, '_')
+    if (process.env[modifiedKey] !== undefined) {
+        return process.env[modifiedKey]
+    }
+    return config.get(key)
+}
+
 
 // debug constants
-export var DEBUGMODE = config.get('debug-mode.enabled')
-export const DEBUG_SERVER_ID = config.get('debug-mode.debug-server-id')
-export const DEBUG_CHANNEL_ID = config.get('debug-mode.debug-channel-id')
+export var DEBUGMODE = loadOption('debug-mode.enabled')
+export const DEBUG_SERVER_ID = loadOption('debug-mode.debug-server-id')
+export const DEBUG_CHANNEL_ID = loadOption('debug-mode.debug-channel-id')
+
+export const LOGGING_SERVER_ID = loadOption('server-info.logging-server-id')
+export const LOGGING_CHANNEL_ID = loadOption('server-info.logging-channel-id')
 
 console.log(`Running with debug mode set to ${DEBUGMODE}`)
 
 // text constants
 
-export const EMOJI_MONDAY = config.get('emoji.monday')
-export const EMOJI_TUESDAY = config.get('emoji.tuesday')
-export const EMOJI_WEDNESDAY = config.get('emoji.wednesday')
-export const EMOJI_THURSDAY = config.get('emoji.thursday')
-export const EMOJI_FRIDAY = config.get('emoji.friday')
-export const EMOJI_SATURDAY = config.get('emoji.saturday')
-export const EMOJI_SUNDAY = config.get('emoji.sunday')
+export const EMOJI_MONDAY = loadOption('emoji.monday')
+export const EMOJI_TUESDAY = loadOption('emoji.tuesday')
+export const EMOJI_WEDNESDAY = loadOption('emoji.wednesday')
+export const EMOJI_THURSDAY = loadOption('emoji.thursday')
+export const EMOJI_FRIDAY = loadOption('emoji.friday')
+export const EMOJI_SATURDAY = loadOption('emoji.saturday')
+export const EMOJI_SUNDAY = loadOption('emoji.sunday')
 
 // channel constants
 
-export const SCHEDULE_BROADCAST_CHANNEL = config.get('server-info.schedule-broadcast-channel')
+export const SCHEDULE_BROADCAST_CHANNEL = loadOption('server-info.schedule-broadcast-channel')
 
 // server constants
-export const MAIN_SERVER_ID = config.get('server-info.server-id')
-export const ICS_CHANNEL_LISTENER = config.get('debug-mode.debug-server-id')
-export const SILLY_VIDEO_CHANNEL_LISTENER = config.get('server-info.silly-video-channel-listener')
+export const MAIN_SERVER_ID = loadOption('server-info.server-id')
+export const ICS_CHANNEL_LISTENER = loadOption('debug-mode.debug-server-id')
+export const SILLY_VIDEO_CHANNEL_LISTENER = loadOption('server-info.silly-video-channel-listener')
 
 // other constants
-export const ADMIN_USER_ID = config.get('server-info.admin-user-id')
+export const ADMIN_USER_ID = loadOption('server-info.admin-user-id')
 
 //CONSTANTS END
 
@@ -69,11 +78,11 @@ export const client = new Client({
     ]
 })
 
-const dbHost: String = DEBUGMODE ? config.get('debug-mode.debughost') : config.get('database.host')
-const dbPort: String = DEBUGMODE ? config.get('debug-mode.debugport') : config.get('database.port')
-const dbUser: String = DEBUGMODE ? config.get('debug-mode.debuguser') : config.get('database.user')
-const dbPassword: String = DEBUGMODE ? config.get('debug-mode.debugpassword') : config.get('database.password')
-const dbDatabase: String = DEBUGMODE ? config.get('debug-mode.debugdatabase') : config.get('database.database')
+const dbHost: String = DEBUGMODE ? loadOption('debug-mode.debughost') : loadOption('database.host')
+const dbPort: String = DEBUGMODE ? loadOption('debug-mode.debugport') : loadOption('database.port')
+const dbUser: String = DEBUGMODE ? loadOption('debug-mode.debuguser') : loadOption('database.user')
+const dbPassword: String = DEBUGMODE ? loadOption('debug-mode.debugpassword') : loadOption('database.password')
+const dbDatabase: String = DEBUGMODE ? loadOption('debug-mode.debugdatabase') : loadOption('database.database')
 
 console.log(`Attempting to create SQL connection to db ${dbDatabase} with ${dbHost}:${dbPort} ${dbUser}/${dbPassword}`)
 export const con = mysql.createPool({
@@ -85,8 +94,14 @@ export const con = mysql.createPool({
 })
 
 export var debugchannel: GuildTextBasedChannel
+export var loggingchannel: TextBasedChannel
 
 client.on('ready', async () => {
+
+    console.log("Environment Variables:")
+    for (const [key, value] of Object.entries(process.env)) {
+        console.log(`${key}: ${value}`)
+    }
 
     db_setup.setupDatabaseTables()
 
@@ -98,11 +113,12 @@ client.on('ready', async () => {
     }
 
     debugchannel = await client.channels.fetch(DEBUG_CHANNEL_ID) as GuildTextBasedChannel
+    loggingchannel = await client.channels.fetch(LOGGING_CHANNEL_ID) as GuildTextBasedChannel
 
 
     console.info(`The bot is ready ${new Date().toISOString()}`)
 
-    await debugchannel.send("Bot Started")
+    await loggingchannel.send("Bot Started")
 })
 
 client.on('messageCreate', async (message: Message) => {
@@ -114,7 +130,7 @@ client.on('interactionCreate', async (i: Interaction<CacheType>) => {
 })
 
 // hourly housekeep
-cron.schedule('* * * * *', async () => { // 0 * * * * for every hour or * * * * * for every min
+cron.schedule('0 * * * *', async () => {
     await scheduled_jobs.hourlyHousekeepTask()
 })
 
