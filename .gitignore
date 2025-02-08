@@ -133,3 +133,4 @@ dist
 config/local.yml
 package-lock.json
 robota.tar
+.docker_temp*

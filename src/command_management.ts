@@ -19,7 +19,7 @@ export function registerCommands() {
     /*
    // @ts-ignore
    client.application.commands.fetch('975103804766842971') // id of your command to delete
-       .then( (command) => {
+       .then((command: any) => {
            console.log(`Fetched command ${command.name}`)
            // further delete it like so:
            command.delete()
@@ -39,7 +39,7 @@ export function registerCommands() {
 
     commands?.create({
         name: 'tomorrow',
-        description: "What's happening today?"
+        description: "What's happening tomorrow?"
     })
 
     commands?.create({

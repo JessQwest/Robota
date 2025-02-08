@@ -51,7 +51,7 @@ export const SCHEDULE_BROADCAST_CHANNEL = loadOption('server-info.schedule-broad
 
 // server constants
 export const MAIN_SERVER_ID = loadOption('server-info.server-id')
-export const ICS_CHANNEL_LISTENER = loadOption('debug-mode.debug-server-id')
+export const ICS_CHANNEL_LISTENER = loadOption('server-info.ics-channel-listener')
 export const SILLY_VIDEO_CHANNEL_LISTENER = loadOption('server-info.silly-video-channel-listener')
 
 // other constants
@@ -94,7 +94,7 @@ export const con = mysql.createPool({
 })
 
 export var debugchannel: GuildTextBasedChannel
-export var loggingchannel: TextBasedChannel
+export var loggingchannel: GuildTextBasedChannel
 
 client.on('ready', async () => {
 
@@ -150,44 +150,32 @@ cron.schedule('0 7 * * 5', async () => { // every 7am on monday
 })
 
 process.on('unhandledRejection', error => {
-    if (debugchannel === undefined) {
-        //console.error("You are probably missing your environment key!")
-    }
     console.warn(`error time ${new Date().toISOString()}`)
     console.error('Unhandled promise rejection:', error)
     if (error == null || !(error instanceof Error)) {
         console.log(`Error is invalid (jx0032)`)
         return
     }
-    debugchannel.send(`Unhandled promise rejection: ${error} \n\n${error.stack}`)
+    loggingchannel.send(`Unhandled promise rejection: ${error} \n\n${error.stack}`)
 })
 
 client.on('shardError', (error: { stack: any }) => {
-    if (debugchannel === undefined) {
+    if (loggingchannel === undefined) {
         console.error("You are probably missing your environment key!")
     }
     console.warn(`error time ${new Date().toISOString()}`)
     console.warn('A websocket connection encountered an error:', error)
-    debugchannel.send(`A websocket connection encountered an error: ${error} \n\n${error.stack}`)
+    loggingchannel.send(`A websocket connection encountered an error: ${error} \n\n${error.stack}`)
 })
 
 process.on('uncaughtException', error => {
-    if (debugchannel === undefined) {
-        //console.error("You are probably missing your environment key!")
-    }
     console.warn(`error time ${new Date().toISOString()}`)
     console.warn('Unhandled exception:', error)
-    //debugchannel.send(`Unhandled exception: ${error} \n\n${error.stack}`)
 })
 
 //post all errors into the log channel
 const originalError = console.error
 console.error = function (...args) {
-    if (debugchannel === undefined) {
-        //console.error("You are probably missing your environment key!")
-    }
-    //debugchannel.send(`logger.error: ${args.toString()}`)
-
     // Call the original console.error function to print the error message
     originalError.apply(console, args)
 }

@@ -33,12 +33,12 @@ export async function processICS(icsString: string) {
             const event = calendar[key];
             if (event.type === 'VEVENT') {
                 const vEvent = event as VEventMS;
+                const summaryObj = vEvent.summary as unknown as PropertyWithArgs<any>;
+                const summary = summaryObj.val;
                 const startTime = vEvent.start;
                 const endTime = vEvent.end;
                 const duration = moment.duration(moment(endTime).diff(moment(startTime)));
-                console.log(`Event duration: ${duration.humanize()}`);
-                const summaryObj = vEvent.summary as unknown as PropertyWithArgs<any>;
-                const summary = summaryObj.val;
+                console.log(`Event ${summary} has a duration of ${duration.humanize()}`);
                 const categories = vEvent.categories;
 
                 if (categories && categories.some(category => category.toLowerCase().includes("ignore"))) {
@@ -163,7 +163,9 @@ export async function getWeekendCalendarEvents(): Promise<CalendarEvent[]> {
 }
 
 export function formatCalendarEvents(events: CalendarEvent[], dayView: boolean): string {
-    return events.map(event => {
+    if (events === null || events.length === 0) {
+        return "No events found :smiling_face_with_3_hearts:";
+    } else return events.map(event => {
         const startTime = event.startTime;
         const endTime = event.endTime;
         const dayEmoji = dayView ? "" : getDayEmoji(startTime);
