@@ -7,6 +7,7 @@ import {
 import { stringToEmbeds } from "./utility"
 import { client, SCHEDULE_BROADCAST_CHANNEL, WEBDAV_ENABLED, WEBDAV_FILEPATH, webdavClient } from "./index"
 import axios from 'axios';
+import { readData, writeData } from "./data_persistence"
 
 export async function hourlyHousekeepTask() {
     if (client.user != null) {
@@ -31,6 +32,14 @@ export async function pullWebdav() {
     const stats = await webdavClient.stat(WEBDAV_FILEPATH)
     if ('lastmod' in stats) {
         console.log(`Last modified: ${stats.lastmod}`)
+    } else return
+
+    const lastModified = await readData('ics_last_modified')
+    if (lastModified === stats.lastmod) {
+        console.log("No new ICS file found")
+        return
+    } else {
+        console.log(`New ICS file found! New ICS: ${stats.lastmod}. Old ICS: ${lastModified}`)
     }
 
     const contents = await webdavClient.getFileContents(WEBDAV_FILEPATH, {format: 'text'})
@@ -42,6 +51,7 @@ export async function pullWebdav() {
 
     await processICS(contents).then(() => {
         console.log("ICS file processed successfully")
+        writeData('ics_last_modified', stats.lastmod)
     }).catch((error) => {
         console.error(`Failed to process ICS file: ${error}`)
     })
