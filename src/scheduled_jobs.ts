@@ -17,6 +17,8 @@ export async function hourlyHousekeepTask() {
         const daysUntilTarget = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
         console.log(`changing target date: ${daysUntilTarget} days.`)
         client.user.setActivity(`${daysUntilTarget} days.`)
+
+        await pullWebdav()
     }
 }
 
