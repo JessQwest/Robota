@@ -113,10 +113,14 @@ export async function dataFetch(data_url: string) : Promise<string> {
 
 export type TimestampType = "d" | "D" | "t" | "T" | "f" | "F" | "R"
 
-export function dateToDiscordTimestamp(date: Date, timestampType: TimestampType = "f"): string {
+export type StartEndTime = "start" | "end"
+
+export function dateToDiscordTimestamp(date: Date, timestampType: TimestampType = "f", startEndTime: StartEndTime | null = null): string {
     let modifiedDate = date
     if (date.getHours() === 0 && date.getMinutes() === 0 && date.getSeconds() === 0) {
-        modifiedDate = new Date(date.getTime() + 12 * 60 * 60 * 1000);
+        let timeModifier = 12 * 60 * 60 * 1000
+        if (startEndTime === "end") timeModifier *= -1
+        modifiedDate = new Date(date.getTime() + timeModifier);
         timestampType = "D";
     }
     const unixTimestamp = Math.floor(modifiedDate.getTime() / 1000);

@@ -176,8 +176,8 @@ export function formatCalendarEvents(events: CalendarEvent[], dayView: boolean):
             const adjustedStartTime = new Date(startTime.getTime() + 12 * 60 * 60 * 1000);
             return `${dayEmoji}${dateToDiscordTimestamp(adjustedStartTime, "D")}: ${event.name}`;
         } else {
-            const formattedStartTime = dateToDiscordTimestamp(startTime, dayView ? "t" : "f");
-            const formattedEndTime = dateToDiscordTimestamp(endTime, "t");
+            const formattedStartTime = dateToDiscordTimestamp(startTime, dayView ? "t" : "f", "start");
+            const formattedEndTime = dateToDiscordTimestamp(endTime, "t", "end");
             return `${dayEmoji}${formattedStartTime} - ${formattedEndTime}: ${event.name}`;
         }
     }).join('\n');
