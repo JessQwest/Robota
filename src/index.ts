@@ -1,18 +1,18 @@
 import { interactionCreateCommand } from "./action_interactionCreateCommand"
+import * as dotenv from 'dotenv'
+import { CacheType, GuildTextBasedChannel, Interaction, Message } from "discord.js"
+import * as db_setup from './db_setup'
+import * as scheduled_jobs from './scheduled_jobs'
+import { hourlyHousekeepTask } from './scheduled_jobs'
+import * as command_management from './command_management'
+import { messageCreate } from "./action_messageCreate"
+import { AuthType, createClient, WebDAVClient } from "webdav"
 
 var cron = require('node-cron')
 const config = require("config")
-import * as dotenv from 'dotenv'
-import { CacheType, GuildTextBasedChannel, Interaction, Message, TextBasedChannel } from "discord.js"
 
 dotenv.config()
 const mysql = require('mysql')
-
-import * as db_setup from './db_setup'
-import * as scheduled_jobs from './scheduled_jobs'
-import * as command_management from './command_management'
-import { messageCreate } from "./action_messageCreate"
-import { hourlyHousekeepTask } from "./scheduled_jobs"
 
 const {Client, GatewayIntentBits, Partials} = require('discord.js')
 
@@ -54,6 +54,15 @@ export const MAIN_SERVER_ID = loadOption('server-info.server-id')
 export const ICS_CHANNEL_LISTENER = loadOption('server-info.ics-channel-listener')
 export const SILLY_VIDEO_CHANNEL_LISTENER = loadOption('server-info.silly-video-channel-listener')
 
+//webdav constants
+
+export const WEBDAV_ENABLED = loadOption('webdav.enabled')
+export const WEBDAV_AUTHTYPE = loadOption('webdav.authtype')
+export const WEBDAV_URL = loadOption('webdav.url')
+export const WEBDAV_USERNAME = loadOption('webdav.username')
+export const WEBDAV_PASSWORD = loadOption('webdav.password')
+export const WEBDAV_FILEPATH = loadOption('webdav.filepath')
+
 // other constants
 export const ADMIN_USER_ID = loadOption('server-info.admin-user-id')
 
@@ -77,6 +86,16 @@ export const client = new Client({
         Partials.Message,
     ]
 })
+
+export var webdavClient: WebDAVClient | null = null
+
+if (WEBDAV_ENABLED) {
+    webdavClient = createClient(WEBDAV_URL, {
+        authType: WEBDAV_AUTHTYPE as AuthType,
+        username: WEBDAV_USERNAME,
+        password: WEBDAV_PASSWORD
+    });
+}
 
 const dbHost: String = DEBUGMODE ? loadOption('debug-mode.debughost') : loadOption('database.host')
 const dbPort: String = DEBUGMODE ? loadOption('debug-mode.debugport') : loadOption('database.port')

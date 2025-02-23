@@ -29,6 +29,14 @@ database:
   password: ''
   database: ''
 
+webdav:
+  enabled: false
+  authtype: 'digest'
+  url: ''
+  username: ''
+  password: ''
+  filepath: '/calendar.ics'
+
 debug-mode:
   # Useful for testing with a non production database
   enabled: false

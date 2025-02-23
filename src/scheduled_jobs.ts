@@ -2,10 +2,10 @@ import {
     formatCalendarEvents,
     getThisWeekCalendarEvents,
     getTodayCalendarEvents,
-    getWeekendCalendarEvents
+    getWeekendCalendarEvents, processICS
 } from "./zTopic_calendar_management"
 import { stringToEmbeds } from "./utility"
-import { client, SCHEDULE_BROADCAST_CHANNEL } from "./index"
+import { client, SCHEDULE_BROADCAST_CHANNEL, WEBDAV_ENABLED, WEBDAV_FILEPATH, webdavClient } from "./index"
 import axios from 'axios';
 
 export async function hourlyHousekeepTask() {
@@ -17,6 +17,34 @@ export async function hourlyHousekeepTask() {
         console.log(`changing target date: ${daysUntilTarget} days.`)
         client.user.setActivity(`${daysUntilTarget} days.`)
     }
+}
+
+export async function pullWebdav() {
+    if (webdavClient === null || WEBDAV_ENABLED === false) return
+    console.log("Pulling Webdav")
+    const rootExists = await webdavClient.exists('/')
+    if (!rootExists) {
+        console.log("Root does not exist")
+        return
+    }
+
+    const stats = await webdavClient.stat(WEBDAV_FILEPATH)
+    if ('lastmod' in stats) {
+        console.log(`Last modified: ${stats.lastmod}`)
+    }
+
+    const contents = await webdavClient.getFileContents(WEBDAV_FILEPATH, {format: 'text'})
+
+    if (typeof contents !== 'string') {
+        console.log("Obtained file is not a string!")
+        return
+    }
+
+    await processICS(contents).then(() => {
+        console.log("ICS file processed successfully")
+    }).catch((error) => {
+        console.error(`Failed to process ICS file: ${error}`)
+    })
 }
 
 export async function mondayAnnouncementTask() {
