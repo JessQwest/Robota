@@ -163,10 +163,15 @@ export async function getWeekendCalendarEvents(): Promise<CalendarEvent[]> {
 }
 
 export function formatCalendarEvents(events: CalendarEvent[], dayView: boolean): string {
+    let newDay = false;
+    let lastEventDate: Date | null = null;
+
     if (events === null || events.length === 0) {
         return "No events found :smiling_face_with_3_hearts:";
     } else return events.map(event => {
         const startTime = event.startTime;
+        newDay = !!(lastEventDate && startTime.toDateString() !== lastEventDate.toDateString());
+        lastEventDate = startTime;
         const endTime = event.endTime;
         const dayEmoji = dayView ? "" : getDayEmoji(startTime);
 
@@ -174,11 +179,11 @@ export function formatCalendarEvents(events: CalendarEvent[], dayView: boolean):
             endTime.getHours() === 0 && endTime.getMinutes() === 0 && endTime.getSeconds() === 0 &&
             endTime.getTime() - startTime.getTime() === 24 * 60 * 60 * 1000) {
             const adjustedStartTime = new Date(startTime.getTime() + 12 * 60 * 60 * 1000);
-            return `${dayEmoji}${dateToDiscordTimestamp(adjustedStartTime, "D")}: ${event.name}`;
+            return `${newDay ? "\n" : ""}${dayEmoji}${dateToDiscordTimestamp(adjustedStartTime, "D")}: ${event.name}`;
         } else {
             const formattedStartTime = dateToDiscordTimestamp(startTime, dayView ? "t" : "f", "start");
             const formattedEndTime = dateToDiscordTimestamp(endTime, "t", "end");
-            return `${dayEmoji}${formattedStartTime} - ${formattedEndTime}: ${event.name}`;
+            return `${newDay ? "\n" : ""}${dayEmoji}${formattedStartTime} - ${formattedEndTime}: ${event.name}`;
         }
     }).join('\n');
 }

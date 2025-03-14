@@ -4,10 +4,12 @@ import {
     getTodayCalendarEvents,
     getWeekendCalendarEvents, processICS
 } from "./zTopic_calendar_management"
-import { stringToEmbeds } from "./utility"
+import { escapeFormatting, stringToEmbeds } from "./utility"
 import { client, SCHEDULE_BROADCAST_CHANNEL, WEBDAV_ENABLED, WEBDAV_FILEPATH, webdavClient } from "./index"
 import axios from 'axios';
 import { readData, writeData } from "./data_persistence"
+
+export const MUFASA = "https://media1.tenor.com/m/F24VAo_wF4AAAAAC/its-friday-there.gif"
 
 export async function hourlyHousekeepTask() {
     if (client.user != null) {
@@ -63,9 +65,9 @@ export async function mondayAnnouncementTask() {
     getThisWeekCalendarEvents().then(async (events) => {
         const formattedDates = formatCalendarEvents(events, false)
 
-        const embeds = stringToEmbeds("This week's events", formattedDates)
+        const embeds = stringToEmbeds("This weeks events", formattedDates, "#d9264d", await getIcsUpdateTime())
 
-        let preamble = await generatePreamble(new Date(), 'WEEK')
+        let preamble = "We're about to enter a new week! Let's get an overview of the week ahead:"
 
         await client.channels.fetch(SCHEDULE_BROADCAST_CHANNEL).then((channel: any) => {
             channel.send({content: preamble, embeds: embeds})
@@ -77,9 +79,9 @@ export async function weekendAnnouncementTask() {
     getWeekendCalendarEvents().then(async (events) => {
         const formattedDates = formatCalendarEvents(events, false)
 
-        const embeds = stringToEmbeds("This weekends events", formattedDates)
+        const embeds = stringToEmbeds("This weekends events", formattedDates, "#d9264d", await getIcsUpdateTime())
 
-        let preamble = await generatePreamble(new Date(), 'WEEKEND')
+        let preamble = "The weekend is almost upon us! Let's see the plan for the coming weekend:"
 
         await client.channels.fetch(SCHEDULE_BROADCAST_CHANNEL).then((channel: any) => {
             channel.send({content: preamble, embeds: embeds})
@@ -89,11 +91,16 @@ export async function weekendAnnouncementTask() {
 
 export async function dailyAnnouncementTask() {
     getTodayCalendarEvents().then(async (events) => {
+        if (new Date().getDay() === 5) {
+            await client.channels.fetch(SCHEDULE_BROADCAST_CHANNEL).then((channel: any) => {
+                channel.send(MUFASA)
+            })
+        }
         const formattedDates = formatCalendarEvents(events, true)
 
-        const embeds = stringToEmbeds("Today's events", formattedDates)
+        const embeds = stringToEmbeds("Today's events", formattedDates, "#d9264d", await getIcsUpdateTime())
 
-        let preamble = await generatePreamble(new Date(), 'TODAY')
+        let preamble = await generatePreamble(new Date(),)
 
         console.log(`preamble = ${preamble}`)
 
@@ -103,7 +110,6 @@ export async function dailyAnnouncementTask() {
     })
 }
 
-type ScheduleType = 'TODAY' | 'WEEK' | 'WEEKEND';
 
 const FUN_FACT = "Today's fun fact:"
 
@@ -113,23 +119,26 @@ const DAY_TEXTS: { [key: number]: string } = {
     2: "Happy Tuesday! It's statistically the best day to buy tacos and pizza!",
     3: "Happy Wednesday! We're halfway through the week!",
     4: "Happy Thursday! The weekend is almost here!",
-    5: "Happy Friday! [MUFASA MOMENT!!](https://media1.tenor.com/m/F24VAo_wF4AAAAAC/its-friday-there.gif)",
+    5: "Happy Friday! MUFASA MOMENT!!",
     6: "Happy Saturday! It's the weekend! Time for lots of snuggles and relaxing"
 };
 
 const SCHEDULE_TEXTS = {
-    'TODAY': "Let's see what Jess is doing today:",
-    'WEEK': "Here's what Jess is up to this week:",
-    'WEEKEND': "Here's what Jess is up to this weekend:"
+    'TODAY': "Let's see what the plan is for today:",
 };
 
-async function generatePreamble(date: Date, scheduleType: ScheduleType): Promise<string> {
+async function generatePreamble(date: Date): Promise<string> {
     const dayOfWeek = date.getDay();
     const dayText = DAY_TEXTS[dayOfWeek];
-    const scheduleText = SCHEDULE_TEXTS[scheduleType];
+    const scheduleText = SCHEDULE_TEXTS['TODAY'];
 
     const funFactResponse = await axios.get('https://uselessfacts.jsph.pl/api/v2/facts/today');
-    const funFact = `${FUN_FACT} ${funFactResponse.data.text}`;
+    const funFact = `${FUN_FACT} ${escapeFormatting(funFactResponse.data.text)}`;
 
     return `${dayText}\n\n${funFact}\n\n${scheduleText}`;
+}
+
+export async function getIcsUpdateTime(): Promise<string> {
+    const icsLastModified = await readData('ics_last_modified')
+    return `Calendar accurate as of: ${icsLastModified}`
 }

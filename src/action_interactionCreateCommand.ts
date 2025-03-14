@@ -8,6 +8,7 @@ import {
     getTodayCalendarEvents, getTomorrowCalendarEvents, getWeekendCalendarEvents
 } from "./zTopic_calendar_management"
 import { stringToEmbeds } from "./utility"
+import { getIcsUpdateTime } from "./scheduled_jobs"
 
 export async function interactionCreateCommand(client: Client, i: Interaction) {
     if (!i.isCommand()) return
@@ -15,56 +16,56 @@ export async function interactionCreateCommand(client: Client, i: Interaction) {
     const { commandName, options, user, member, guild } = i
 
     if (commandName === "today") {
-        getTodayCalendarEvents().then((events) => {
+        getTodayCalendarEvents().then(async (events) => {
             const formattedDates = formatCalendarEvents(events, true)
 
-            const embeds = stringToEmbeds("Today's events", formattedDates)
+            const embeds = stringToEmbeds("Today's events", formattedDates, "#d9264d", await getIcsUpdateTime())
 
-            i.reply({ embeds: embeds })
+            i.reply({embeds: embeds})
         })
         return
     }
 
     if (commandName === "tomorrow") {
-        getTomorrowCalendarEvents().then((events) => {
+        getTomorrowCalendarEvents().then(async (events) => {
             const formattedDates = formatCalendarEvents(events, true)
 
-            const embeds = stringToEmbeds("Tomorrows events", formattedDates)
+            const embeds = stringToEmbeds("Tomorrows events", formattedDates, "#d9264d", await getIcsUpdateTime())
 
-            i.reply({ embeds: embeds })
+            i.reply({embeds: embeds})
         })
         return
     }
 
     if (commandName === "thisweek") {
-        getThisWeekCalendarEvents().then((events) => {
+        getThisWeekCalendarEvents().then(async (events) => {
             const formattedDates = formatCalendarEvents(events, false)
 
-            const embeds = stringToEmbeds("This weeks events", formattedDates)
+            const embeds = stringToEmbeds("This weeks events", formattedDates, "#d9264d", await getIcsUpdateTime())
 
-            i.reply({ embeds: embeds })
+            i.reply({embeds: embeds})
         })
         return
     }
 
     if (commandName === "nextweek") {
-        getNextWeekCalendarEvents().then((events) => {
+        getNextWeekCalendarEvents().then(async (events) => {
             const formattedDates = formatCalendarEvents(events, false)
 
-            const embeds = stringToEmbeds("Events for the next 7 days", formattedDates)
+            const embeds = stringToEmbeds("Events for the next 7 days", formattedDates, "#d9264d", await getIcsUpdateTime())
 
-            i.reply({ embeds: embeds })
+            i.reply({embeds: embeds})
         })
         return
     }
 
     if (commandName === "weekend") {
-        getWeekendCalendarEvents().then((events) => {
+        getWeekendCalendarEvents().then(async (events) => {
             const formattedDates = formatCalendarEvents(events, false)
 
-            const embeds = stringToEmbeds("Weekend events", formattedDates)
+            const embeds = stringToEmbeds("Weekend events", formattedDates, "#d9264d", await getIcsUpdateTime())
 
-            i.reply({ embeds: embeds })
+            i.reply({embeds: embeds})
         })
         return
     }

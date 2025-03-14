@@ -1,8 +1,15 @@
 import * as DiscordJS from "discord.js"
 import { ADMIN_USER_ID, DEBUG_CHANNEL_ID } from "./index"
-import { dailyAnnouncementTask, mondayAnnouncementTask, pullWebdav, weekendAnnouncementTask } from "./scheduled_jobs"
+import {
+    dailyAnnouncementTask,
+    mondayAnnouncementTask,
+    MUFASA,
+    pullWebdav,
+    weekendAnnouncementTask
+} from "./scheduled_jobs"
 
 export async function debug_messageCreate(message: DiscordJS.Message) {
+    if (message.author.bot) return
     if (message.content === "dct" && message.author.id === ADMIN_USER_ID && message.channelId === DEBUG_CHANNEL_ID) {
         await dailyAnnouncementTask()
         return
@@ -20,6 +27,11 @@ export async function debug_messageCreate(message: DiscordJS.Message) {
 
     if (message.content === "webdav" && message.author.id === ADMIN_USER_ID && message.channelId === DEBUG_CHANNEL_ID) {
         await pullWebdav()
+        return
+    }
+
+    if (message.content === "mufasa" && message.author.id === ADMIN_USER_ID && message.channelId === DEBUG_CHANNEL_ID) {
+        await message.reply(MUFASA)
         return
     }
 }
