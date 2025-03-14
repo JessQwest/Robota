@@ -12,7 +12,7 @@ var cron = require('node-cron')
 const config = require("config")
 
 dotenv.config()
-const mysql = require('mysql')
+const mysql = require('mysql2')
 
 const {Client, GatewayIntentBits, Partials} = require('discord.js')
 
