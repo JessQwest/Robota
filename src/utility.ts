@@ -2,6 +2,8 @@ import * as DiscordJS from "discord.js"
 import { ColorResolvable, EmbedBuilder } from "discord.js"
 import fetch from "node-fetch"
 
+const ESCAPE_CHARS = ["_", "*", "~", "`", ">", "||"]
+
 export function escapeFormatting(input: string): string {
     if (input.includes("\\")) {
         console.log("The string seems to already be escaped (jx0028)")
@@ -11,11 +13,19 @@ export function escapeFormatting(input: string): string {
     if (input.endsWith("#0")) {
         input = input.slice(0, -2)
     }
-    return input.replaceAll("_","\\_")
+    let escapedInput = input
+    for (const char of ESCAPE_CHARS) {
+        escapedInput = escapedInput.replaceAll(char, `\\${char}`)
+    }
+    return escapedInput
 }
 
 export function unescapeFormatting(input: string) {
-    return input.replaceAll("\\","")
+    let unescapedInput = input
+    for (const char of ESCAPE_CHARS) {
+        unescapedInput = unescapedInput.replaceAll(`\\${char}`, char)
+    }
+    return unescapedInput
 }
 
 export function capitalizeFirstLetter(input: string) {
