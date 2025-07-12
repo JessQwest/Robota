@@ -45,8 +45,14 @@ export async function processICS(icsString: string) {
                     continue;
                 }
 
+                // Looking into how we can better fix the occurence issue
+                //console.log(`Event ${summary} has occurences ${JSON.stringify(event.recurrences)}`)
+
                 if (vEvent.rrule) { // multi instance
                     const reoccurringEvents = vEvent.rrule.all();
+                    //const exdate = vEvent.exdate;
+                    //const recurrenceid = vEvent.recurrenceid;
+                    //console.log(`Reoccurring event ${summary} has ${JSON.stringify(exdate)} & ${JSON.stringify(recurrenceid)}`)
                     for (const reoccurringEvent of reoccurringEvents) {
                         const reoccurringStartTime = reoccurringEvent;
                         const reoccurringEndTime = new Date(reoccurringStartTime.getTime() + duration.asMilliseconds());
@@ -56,6 +62,7 @@ export async function processICS(icsString: string) {
                             endTime: reoccurringEndTime,
                             categories: categories
                         };
+                        //console.log(`Reoccurring event ${summary} at ${reoccurringStartTime}`);
                         events.push(calendarEvent);
                     }
                 } else { // single instance

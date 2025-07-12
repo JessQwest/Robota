@@ -132,8 +132,8 @@ async function generatePreamble(date: Date): Promise<string> {
     const dayText = DAY_TEXTS[dayOfWeek];
     const scheduleText = SCHEDULE_TEXTS['TODAY'];
 
-    const funFactResponse = await axios.get('https://uselessfacts.jsph.pl/api/v2/facts/today');
-    const funFact = `${FUN_FACT} ${escapeFormatting(funFactResponse.data.text)}`;
+    const funFactResponse = await axios.get('https://catfact.ninja/fact');
+    const funFact = `${FUN_FACT} ${escapeFormatting(funFactResponse.data.fact)}`;
 
     return `${dayText}\n\n${funFact}\n\n${scheduleText}`;
 }
