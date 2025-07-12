@@ -154,17 +154,17 @@ cron.schedule('0 * * * *', async () => {
 })
 
 // daily announcement
-cron.schedule('30 13 * * *', async () => { // 1.30pm daily
+cron.schedule('0 7 * * *', async () => { // 8am daily
     await scheduled_jobs.dailyAnnouncementTask()
 })
 
 // monday announcement
-cron.schedule('1 0 * * 1', async () => { // 12:01am on monday
+cron.schedule('0 19 * * 7', async () => { // 7pm on sunday
     await scheduled_jobs.mondayAnnouncementTask()
 })
 
 // saturday announcement
-cron.schedule('0 18 * * 5', async () => { // every 6pm on friday
+cron.schedule('0 16 * * 5', async () => { // every 4pm on friday
     await scheduled_jobs.weekendAnnouncementTask()
 })
 

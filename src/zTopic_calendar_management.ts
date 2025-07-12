@@ -123,6 +123,24 @@ export async function getThisWeekCalendarEvents(): Promise<CalendarEvent[]> {
     return await getOverlappingEvents(startTime, endTime);
 }
 
+export async function getNextCalendarWeekEvents(): Promise<CalendarEvent[]> {
+    const today = new Date();
+    const day = today.getDay(); // 0 (Sun) to 6 (Sat)
+
+    // Calculate days until next Monday
+    const daysUntilNextMonday = ((8 - day) % 7) || 7;
+
+    const startTime = new Date(today);
+    startTime.setDate(today.getDate() + daysUntilNextMonday);
+    startTime.setHours(0, 0, 1, 0);
+
+    const endTime = new Date(startTime);
+    endTime.setDate(startTime.getDate() + 6);
+    endTime.setHours(23, 59, 59, 999);
+
+    return await getOverlappingEvents(startTime, endTime);
+}
+
 export async function getNextWeekCalendarEvents(): Promise<CalendarEvent[]> {
     const startTime = new Date();
     startTime.setHours(0, 0, 1, 0);

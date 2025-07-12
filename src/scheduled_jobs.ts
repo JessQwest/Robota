@@ -1,5 +1,5 @@
 import {
-    formatCalendarEvents,
+    formatCalendarEvents, getNextCalendarWeekEvents,
     getThisWeekCalendarEvents,
     getTodayCalendarEvents,
     getWeekendCalendarEvents, processICS
@@ -62,7 +62,7 @@ export async function pullWebdav() {
 }
 
 export async function mondayAnnouncementTask() {
-    getThisWeekCalendarEvents().then(async (events) => {
+    getNextCalendarWeekEvents().then(async (events) => {
         const formattedDates = formatCalendarEvents(events, false)
 
         const embeds = stringToEmbeds("This weeks events", formattedDates, "#d9264d", await getIcsUpdateTime())
