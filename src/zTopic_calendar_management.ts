@@ -13,14 +13,14 @@ import {
 import { dateToDiscordTimestamp } from "./utility"
 
 interface VEventMS extends VEvent {
-    categories?: string[];
+    categories?: string[]
 }
 
 interface CalendarEvent {
-    name: string;
-    startTime: Date;
-    endTime: Date;
-    categories?: string[];
+    name: string
+    startTime: Date
+    endTime: Date
+    categories?: string[]
 }
 
 
@@ -34,7 +34,7 @@ export async function processICS(icsString: string) {
             if (event.type === 'VEVENT') {
                 const vEvent = event as VEventMS;
                 const summaryObj = vEvent.summary as unknown as PropertyWithArgs<any>;
-                const summary = summaryObj.val;
+                const summary = summaryObj.val || vEvent.summary;
                 const startTime = vEvent.start;
                 const endTime = vEvent.end;
                 const duration = moment.duration(moment(endTime).diff(moment(startTime)));
@@ -95,7 +95,7 @@ async function persistEventsToDatabase(events: CalendarEvent[]) {
             for (const event of events) {
                 await new Promise<void>((resolve, reject) => {
                     con.query('INSERT INTO `events` (`name`, `startTime`, `endTime`, `categories`) VALUES (?, ?, ?, ?)',
-                        [event.name, event.startTime, event.endTime, event.categories?.join(', ')],
+                        [event.name || "Unknown", event.startTime, event.endTime, event.categories?.join(', ')],
                         function (err: any, result: any, fields: any) {
                             if (err) return reject(err);
                             console.log("Event inserted into database");
